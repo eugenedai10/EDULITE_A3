@@ -113,7 +113,10 @@ class SCurvePlanner:
             t1 = t_j
             t2 = max(0.0, v_peak / am - t_j)
             t3 = t_j
-            d_accel = v_peak * (am / jm + v_peak / am)
+            # Distance of ONE phase (accel or decel). v*(am/jm + v/am) is the accel+decel total, the same expression
+            # Step 1 solves for the no-cruise peak, so it must be halved here: Step 3 subtracts 2*d_accel from d.
+            # Without the 0.5 every profile with a cruise phase ended v*(am/jm + v/am) short of its goal.
+            d_accel = 0.5 * v_peak * (am / jm + v_peak / am)
         else:
             t1 = math.sqrt(v_peak / jm)
             t2 = 0.0
@@ -231,7 +234,7 @@ class SCurvePlanner:
             return self._short_profile(d, vm, am, jm)
 
         t2 = max(0.0, t2)
-        d_accel = vm * (am / jm + vm / am)
+        d_accel = 0.5 * vm * (am / jm + vm / am)  # one phase: half of the accel+decel total (not called by plan())
         d_decel = d_accel
         d_cruise = d - d_accel - d_decel
 
